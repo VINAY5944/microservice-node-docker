@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  service_one:
+    image: node:14
+    container_name: service_one
+    build:
+      context: ./service_one
+      dockerfile: Dockerfile
+    environment:
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./service_one:/app
+    command: node /app/index.js
+
+  service_two:
+    image: node:14
+    container_name: service_two
+    build:
+      context: ./service_two
+      dockerfile: Dockerfile
+    environment:
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./service_two:/app
+    command: node /app/index.js
+
+networks:
+  default:
+    external:
+      name: my_network
